@@ -1,0 +1,6 @@
+node_modules/
+dist/
+part1_pytorch.py
+__pycache__/
+*.pyc
+.DS_Store

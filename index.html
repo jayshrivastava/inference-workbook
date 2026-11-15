@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#ffffff" />
+    <title>Inference Workbook</title>
+    <script>
+      try {
+        if (JSON.parse(localStorage.getItem("inference-workbook-v1") || "{}").theme === "dark") {
+          document.documentElement.dataset.theme = "dark";
+          document.querySelector('meta[name="theme-color"]').content = "#181818";
+        }
+      } catch {}
+    </script>
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body>
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="site-title">Inference Workbook</div>
+        <div class="site-author">by <a href="https://github.com/jayshrivastava" target="_blank" rel="noopener noreferrer">@jayshrivastava</a></div>
+        <div class="progress">
+          <div class="progress-label"><span>Progress</span><span id="progress-caption">0 / 0</span></div>
+          <div class="progress-track"><div id="progress-fill"></div></div>
+          <button id="clear-progress" class="clear-progress" type="button" title="Clear completion marks; keep code drafts">Clear progress</button>
+        </div>
+        <nav id="exercise-nav" aria-label="Exercises"></nav>
+      </aside>
+
+      <main class="main">
+        <header class="exercise-header">
+          <div class="exercise-heading"><span id="exercise-number">01</span><h1 id="exercise-title">Loading…</h1></div>
+          <div class="actions">
+            <button id="vim-toggle" class="utility-button" type="button" aria-pressed="false">Vim off</button>
+            <button id="theme-toggle" class="utility-button" type="button" aria-label="Switch to dark mode" title="Switch to dark mode" aria-pressed="false">☾</button>
+            <span class="action-divider" aria-hidden="true">|</span>
+            <button id="reset-button" type="button" title="Discard this browser attempt; keep the local Python file" disabled>Reset attempt</button>
+            <button id="solution-toggle" type="button" aria-expanded="false" hidden>View solution</button>
+            <button id="run-button" type="button" class="run-button">Submit</button>
+          </div>
+        </header>
+        <details class="problem-details" id="problem-details">
+          <summary>Problem description</summary>
+          <pre id="problem-text"></pre>
+        </details>
+        <div id="editor" aria-label="Python editor"></div>
+        <section class="solution-panel" id="solution-panel" hidden>
+          <div class="solution-heading">Solution · read only</div>
+          <pre id="solution-source"></pre>
+        </section>
+        <section class="output" id="result-panel" aria-live="polite">
+          <div class="output-heading"><span>Output</span><span id="result-state">Ready</span></div>
+          <pre id="result-output">Submit your code when you're ready.</pre>
+        </section>
+        <footer class="page-nav">
+          <button id="prev-button" type="button">← Previous</button>
+          <span id="bottom-position">01 / 23</span>
+          <button id="next-button" type="button">Next →</button>
+        </footer>
+      </main>
+    </div>
+    <script type="module" src="/main.js"></script>
+  </body>
+</html>

@@ -1,0 +1,70 @@
+:root{font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#161616;background:#fff}
+*{box-sizing:border-box}
+body{margin:0}
+button{font:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid #111;outline-offset:2px}
+.layout{min-height:100vh;display:grid;grid-template-columns:238px minmax(0,1fr)}
+.sidebar{border-right:1px solid #e5e5e5;padding:24px 14px;display:flex;flex-direction:column;min-height:100vh}
+.site-title{font-size:17px;font-weight:650;line-height:1.1;letter-spacing:-.04em;margin:0 10px 4px;white-space:nowrap}
+.site-author{font-size:10px;color:#999;margin:0 10px 26px}.site-author a{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:#2563eb;text-decoration:underline;text-underline-offset:2px}.site-author a:hover{color:#1d4ed8}
+.progress{padding:0 10px 19px;margin-bottom:19px;border-bottom:1px solid #ededed}
+.progress-label{display:flex;justify-content:space-between;font-size:11px;color:#777}
+.progress-track{height:3px;background:#eaeaea;margin-top:10px}
+#progress-fill{height:100%;width:0;background:#171717;transition:width .2s}
+.clear-progress{background:none;border:0;padding:9px 0 0;color:#999;font-size:10px;text-align:left}.clear-progress:hover{color:#333;text-decoration:underline}
+#exercise-nav{display:flex;flex-direction:column;gap:18px;overflow:auto}
+.sidebar-section-title{font-size:10px;font-weight:600;color:#888;margin:0 10px 5px}
+.sidebar-section-links{display:flex;flex-direction:column;gap:1px}
+.exercise-link{display:grid;grid-template-columns:29px minmax(0,1fr) 8px;gap:6px;align-items:center;width:100%;padding:7px 10px;border:0;background:transparent;text-align:left;border-radius:4px;color:#666}
+.exercise-link:hover{background:#f6f6f6;color:#111}.exercise-link.active{background:#f1f1f1;color:#111;font-weight:600}
+.exercise-id{font:10px ui-monospace,SFMono-Regular,Menlo,monospace}.exercise-name{font-size:11px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.exercise-indicator{width:6px;height:6px;border:1px solid #ccc;border-radius:50%}.exercise-indicator.complete{background:#222;border-color:#222}
+.main{min-width:0;display:flex;flex-direction:column;padding:0 30px}
+.exercise-header{min-height:77px;display:flex;justify-content:space-between;align-items:center;gap:18px;border-bottom:1px solid #e5e5e5}
+.exercise-heading{min-width:0;display:flex;align-items:baseline;gap:16px}
+#exercise-number{font:11px ui-monospace,SFMono-Regular,Menlo,monospace;color:#888;flex:none}
+h1{font-size:20px;font-weight:600;letter-spacing:-.035em;line-height:1.2;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.actions{display:flex;align-items:center;gap:7px;flex:none}
+.actions button{font-size:11px;color:#444;background:#fff;border:1px solid #ddd;border-radius:3px;padding:8px 10px;white-space:nowrap}
+.actions button:not(:disabled):hover{border-color:#888;color:#111}.actions button[aria-pressed=true]{background:#eee;color:#111}.actions button:disabled{background:#f6f6f6;border-color:#eee;color:#aaa;cursor:default}
+.actions .run-button{background:#171717;border-color:#171717;color:#fff;padding:8px 13px}.actions .run-button:hover{background:#333;color:#fff}.actions .run-button:disabled{background:#eee;border-color:#eee;color:#aaa;cursor:default}
+.actions button.utility-button{font:11px ui-monospace,SFMono-Regular,Menlo,monospace;padding:8px 4px;border-color:transparent;background:transparent;color:#777}
+.actions button.utility-button:not(:disabled):hover{background:#f4f4f4;border-color:transparent;color:#111}
+.actions button.utility-button[aria-pressed=true]{background:transparent;color:#333}
+.actions #vim-toggle[aria-pressed=true]{text-decoration:underline;text-underline-offset:3px}
+.actions #theme-toggle{font-size:18px;line-height:1;padding:5px 6px}
+.action-divider{color:#c8c8c8;margin:0 5px;font:14px ui-monospace,SFMono-Regular,Menlo,monospace}
+.actions button[hidden]{display:none}
+.problem-details{border-bottom:1px solid #e5e5e5;font-size:11px}.problem-details summary{cursor:pointer;color:#666;padding:11px 0;list-style:none}.problem-details summary::before{content:"+";display:inline-block;width:16px;color:#999}.problem-details[open] summary::before{content:"−"}.problem-details pre{margin:0 0 17px;padding:2px 0;max-height:300px;overflow:auto;white-space:pre-wrap;font:11px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;color:#444}
+#editor{min-height:400px}.cm-editor{height:min(63vh,680px);min-height:400px;background:#fff}.cm-scroller{overflow:auto}.cm-focused{outline:none!important}.cm-content{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;line-height:1.65;padding:20px 5px!important}.cm-gutters{background:#fff!important;border-right:0!important;color:#c2c2c2!important}.cm-activeLine,.cm-activeLineGutter{background:#f7f7f7!important}
+.solution-panel{border-top:1px solid #e5e5e5;padding:12px 0 18px}.solution-panel[hidden]{display:none}.solution-heading{font-size:10px;color:#888;margin-bottom:10px}.solution-panel pre{margin:0;max-height:380px;overflow:auto;white-space:pre;font:11px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;color:#444}
+.output{border-top:1px solid #e5e5e5;background:#fafafa;min-height:110px}
+.output-heading{display:flex;justify-content:space-between;padding:11px 13px 0;font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.06em}
+.output.pass .output-heading{color:#39704b}.output.fail .output-heading{color:#a34236}.output.running .output-heading{color:#665921}
+.output pre{padding:12px 13px 17px;margin:0;max-height:220px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;font:11px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;color:#444}
+.page-nav{display:flex;align-items:center;justify-content:space-between;padding:15px 0;color:#999;font:10px ui-monospace,SFMono-Regular,Menlo,monospace}
+.page-nav button{border:0;background:transparent;color:#444;font-size:11px;padding:5px 0}.page-nav button:hover{text-decoration:underline}.page-nav button:disabled{color:#ccc;cursor:default;text-decoration:none}
+@media(max-width:850px){.layout{grid-template-columns:190px minmax(0,1fr)}.main{padding:0 18px}.exercise-header{align-items:flex-start;flex-direction:column;justify-content:center;padding:14px 0;gap:12px}.actions{flex-wrap:wrap;align-self:flex-end}.cm-editor{height:55vh}}
+@media(max-width:620px){.layout{display:block}.sidebar{min-height:0;padding:13px;border-right:0;border-bottom:1px solid #e5e5e5}.site-title{font-size:15px;margin:0 3px 2px}.site-author{margin:0 3px 10px}.progress{padding:0 3px 8px;margin-bottom:5px;border:0}#exercise-nav{flex-direction:row;gap:4px}.sidebar-section{flex:none}.sidebar-section-title{display:none}.sidebar-section-links{flex-direction:row;gap:4px}.exercise-link{display:flex;width:auto;gap:5px;border:1px solid #eee;padding:6px}.exercise-name{display:none}.main{padding:0 13px}.exercise-header{min-height:78px}.exercise-heading{gap:8px}h1{font-size:18px;white-space:normal}.actions{gap:5px} .actions button{padding:6px 8px}.cm-editor{height:55vh;min-height:330px}}
+
+[data-theme=dark]{color-scheme:dark;color:#e9e9e9;background:#181818}
+[data-theme=dark] button:focus-visible{outline-color:#8ab4ff}
+[data-theme=dark] .sidebar,[data-theme=dark] .exercise-header,[data-theme=dark] .problem-details,[data-theme=dark] .solution-panel,[data-theme=dark] .output{border-color:#353535}
+[data-theme=dark] .site-author,[data-theme=dark] .progress-label,[data-theme=dark] .sidebar-section-title,[data-theme=dark] #exercise-number,[data-theme=dark] .solution-heading,[data-theme=dark] .page-nav{color:#999}
+[data-theme=dark] .site-author a{color:#8ab4ff}[data-theme=dark] .site-author a:hover{color:#bdd5ff}
+[data-theme=dark] .clear-progress{color:#aaa}[data-theme=dark] .clear-progress:hover{color:#fff}
+[data-theme=dark] .progress{border-color:#353535}[data-theme=dark] .progress-track{background:#383838}[data-theme=dark] #progress-fill{background:#d3d3d3}
+[data-theme=dark] .exercise-link{color:#aaa}[data-theme=dark] .exercise-link:hover{background:#292929;color:#fff}[data-theme=dark] .exercise-link.active{background:#333;color:#fff}
+[data-theme=dark] .exercise-indicator{border-color:#777}[data-theme=dark] .exercise-indicator.complete{background:#d3d3d3;border-color:#d3d3d3}
+[data-theme=dark] .actions button{background:#252525;border-color:#484848;color:#ddd}[data-theme=dark] .actions button:not(:disabled):hover{border-color:#888;color:#fff}[data-theme=dark] .actions button[aria-pressed=true]{background:#373737;color:#fff}
+[data-theme=dark] .actions button:disabled,[data-theme=dark] .actions .run-button:disabled{background:#252525;border-color:#353535;color:#777}
+[data-theme=dark] .actions .run-button{background:#ddd;border-color:#ddd;color:#161616}[data-theme=dark] .actions .run-button:not(:disabled):hover{background:#fff;border-color:#fff;color:#111}
+[data-theme=dark] .actions button.utility-button{background:transparent;border-color:transparent;color:#aaa}
+[data-theme=dark] .actions button.utility-button[aria-pressed=true]{background:transparent;color:#e4e4e4}
+[data-theme=dark] .actions button.utility-button:not(:disabled):hover{background:#303030;border-color:transparent;color:#fff}
+[data-theme=dark] .action-divider{color:#666}
+[data-theme=dark] .problem-details summary{color:#bbb}[data-theme=dark] .problem-details pre,[data-theme=dark] .solution-panel pre,[data-theme=dark] .output pre{color:#ddd}
+[data-theme=dark] .cm-editor{background:#181818!important}[data-theme=dark] .cm-gutters{background:#181818!important;color:#777!important}[data-theme=dark] .cm-activeLine,[data-theme=dark] .cm-activeLineGutter{background:#262626!important}
+[data-theme=dark] .output{background:#202020}[data-theme=dark] .output-heading{color:#aaa}[data-theme=dark] .output.pass .output-heading{color:#83ca95}[data-theme=dark] .output.fail .output-heading{color:#ef9187}[data-theme=dark] .output.running .output-heading{color:#e3ce78}
+[data-theme=dark] .page-nav button{color:#ddd}[data-theme=dark] .page-nav button:disabled{color:#666}
+@media(max-width:620px){[data-theme=dark] .sidebar{border-color:#353535}[data-theme=dark] .exercise-link{border-color:#444}}
