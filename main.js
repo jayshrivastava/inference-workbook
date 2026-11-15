@@ -15,6 +15,7 @@ const GROUPS = [
   { name: "Measurement", range: "20", ids: ["20"] },
 ];
 const STORAGE_KEY = "inference-workbook-v1";
+const STATIC_MODE = import.meta.env.VITE_STATIC_MODE === "1";
 const $ = (id) => document.getElementById(id);
 
 function loadStore() {
@@ -34,6 +35,73 @@ let loadingEditor = false;
 const vimMode = new Compartment();
 const editorTheme = new Compartment();
 const results = new Map();
+const checkerWorkers = new Map();
+let checkerRequest = 0;
+const pendingChecks = new Map();
+let webgpuUnavailable = null;
+
+function runBrowserWorker(kind, payload) {
+  let worker = checkerWorkers.get(kind);
+  if (!worker) {
+    worker = kind === "webgpu"
+      ? new Worker(new URL("./browser_webgpu_worker.js", import.meta.url), { type: "module" })
+      : new Worker(new URL("./browser_worker.js", import.meta.url), { type: "module" });
+    checkerWorkers.set(kind, worker);
+  }
+  worker.onmessage = ({ data }) => {
+    const pending = pendingChecks.get(data.request);
+    if (!pending) return;
+    pendingChecks.delete(data.request);
+    if (data.error) pending.reject(new Error(data.error));
+    else pending.resolve(data.result);
+  };
+  worker.onerror = (event) => {
+    for (const [request, pending] of pendingChecks) {
+      if (pending.kind !== kind) continue;
+      pending.reject(new Error(event.message || `${kind} checker failed.`));
+      pendingChecks.delete(request);
+    }
+  };
+  const request = ++checkerRequest;
+  return new Promise((resolve, reject) => {
+    const timer = kind === "webgpu" ? setTimeout(() => {
+      pendingChecks.delete(request);
+      worker.terminate();
+      checkerWorkers.delete(kind);
+      reject(new Error("WebGPU check timed out after 45 seconds."));
+    }, 45_000) : null;
+    pendingChecks.set(request, {
+      kind,
+      resolve: (value) => { clearTimeout(timer); resolve(value); },
+      reject: (error) => { clearTimeout(timer); reject(error); },
+    });
+    worker.postMessage({ request, payload });
+  });
+}
+
+async function browserCheck(item, source) {
+  const edits = exercises.flatMap((entry) => {
+    const draft = entry.id === item.id ? source : store.drafts[entry.id]?.source;
+    return draft ? [{ function: entry.function, source: draft }] : [];
+  });
+  const payload = { id: item.id, edits };
+  let webgpuResult;
+  if (!webgpuUnavailable) {
+    try {
+      webgpuResult = await runBrowserWorker("webgpu", payload);
+      if (webgpuResult.passed) return { passed: true, output: `WebGPU: ${webgpuResult.output}` };
+    } catch (error) {
+      webgpuUnavailable = String(error.message || error);
+    }
+  }
+  if (currentId === item.id) {
+    results.set(item.id, { kind: "running", output: "WebGPU could not complete this check. Running CPU PyTorch… The first submission may take about 30 seconds." });
+    renderResult();
+  }
+  const cpuResult = await runBrowserWorker("cpu", payload);
+  const gpuOutput = webgpuUnavailable || webgpuResult?.output || "unavailable";
+  return { passed: cpuResult.passed, output: `WebGPU: ${gpuOutput}\nCPU: ${cpuResult.output}` };
+}
 
 function persist() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
@@ -202,16 +270,21 @@ async function runCheck() {
   if (!item?.checkable || $("run-button").disabled) return;
   const source = editor.state.doc.toString();
   $("run-button").disabled = true;
-  results.set(item.id, { kind: "running", output: "Running your code with the local PyTorch checker…" });
+  results.set(item.id, { kind: "running", output: STATIC_MODE ? "Trying WebGPU first… First load may take a while." : "Running your code with the local PyTorch checker…" });
   renderResult();
   try {
-    const response = await fetch("/api/check", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id: item.id, source }),
-    });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || "The checker could not run.");
+    let data;
+    if (STATIC_MODE) {
+      data = await browserCheck(item, source);
+    } else {
+      const response = await fetch("/api/check", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: item.id, source }),
+      });
+      data = await response.json();
+      if (!response.ok) throw new Error(data.error || "The checker could not run.");
+    }
     const passed = !!data.passed;
     results.set(item.id, { kind: passed ? "pass" : "fail", output: data.output || (passed ? "Passed." : "Check failed.") });
     if (passed) store.progress[item.id] = { kind: "verified", source };
@@ -304,7 +377,7 @@ async function main() {
   createEditor();
   installActions();
   try {
-    const response = await fetch("/api/exercises");
+    const response = await fetch(STATIC_MODE ? `${import.meta.env.BASE_URL}catalog.json` : "/api/exercises");
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Could not load exercises.");
     exercises = data.exercises;

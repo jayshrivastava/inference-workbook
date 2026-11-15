@@ -3,7 +3,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "vite build"
+    "build": "vite build",
+    "build:pages": "VITE_STATIC_MODE=1 vite build --base /inference-workbook/ && python3 build_static.py"
   },
   "dependencies": {
     "@codemirror/lang-python": "^6.2.1",
