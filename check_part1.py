@@ -223,7 +223,7 @@ def check_06() -> None:
     )
 
 
-def check_07() -> None:
+def check_07a() -> None:
     """Check contiguous GQA groups, two head-count ratios, and edge cases."""
     q = torch.zeros(2, 4, 4)
     k = torch.zeros(4, 2, 4)
@@ -758,7 +758,7 @@ def main() -> None:
         "04a": check_04a,
         "05": check_05,
         "06": check_06,
-        "07": check_07,
+        "07a": check_07a,
         "07b": check_07b,
         "08": check_08,
         "09": check_09,

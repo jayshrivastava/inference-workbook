@@ -22,14 +22,14 @@ if not SOURCE_FILE.exists():
     SOURCE_FILE = HERE / "problems.py"
 CHECKER_FILE = HERE / "check_part1.py"
 DIST = HERE / "dist"
-CHECKABLE = {f"{i:02}" for i in range(1, 18)} | {"04a", "07b", "18a", "18b", "19", "20"}
+CHECKABLE = {f"{i:02}" for i in range(1, 18) if i != 7} | {"04a", "07a", "07b", "18a", "18b", "19", "20"}
 EXERCISE_ID = re.compile(r"^(\d{2}[a-z]?)\.\s*(.*)")
 MAX_BODY = 200_000
 TITLES = {
     "01": "Scaled QK scores", "02": "Weighted values", "03": "Causal window mask",
     "04": "Single-head attention", "04a": "Predict next token",
     "05": "Multi-head attention", "06": "Multi-query attention",
-    "07": "Grouped-query attention", "07b": "Predict with GQA",
+    "07a": "Grouped-query attention", "07b": "Predict with GQA",
     "08": "Append to KV cache", "09": "Decode one token",
     "10": "Verify draft block", "11": "Commit accepted tokens",
     "12": "Chunked prefill", "13": "Batched GQA decode",
@@ -38,20 +38,20 @@ TITLES = {
     "19": "KV cache bytes", "20": "Measure latency",
 }
 HELPER_DETAILS = {
-    "01": "qk_scores_one_head(q [L,D], k [S,D]) -> [L,S]",
-    "02": "weighted_values(weights [L,S], v [S,Dv]) -> [L,Dv]",
-    "03": "causal_window_mask(past_len, q_len, window=None, device=None) -> bool [q_len, past_len+q_len]",
-    "04": "causal_attention_one_head(q_new [L,D], k_all [S,D], v_all [S,Dv], past_len, window=None) -> [L,Dv]",
-    "07": "grouped_query_attention(q_new [L,Hq,D], k_all [S,Hkv,D], v_all [S,Hkv,Dv], past_len, window=None) -> [L,Hq,Dv]",
-    "08": "append_contiguous_kv(k_cache [capacity,Hkv,D], v_cache [capacity,Hkv,Dv], used, k_new [L,Hkv,D], v_new [L,Hkv,Dv]) -> used+L",
-    "14": "paged_cache_rows(page_table [max_pages], logical_positions [N], page_size) -> physical_rows [N]",
+    "01": "qk_scores_one_head(q: [L,D], k: [S,D]) -> [L,S]",
+    "02": "weighted_values(weights: [L,S], v: [S,Dv]) -> [L,Dv]",
+    "03": "causal_window_mask(past_len: int, q_len: int, window: int | None = None, device: torch.device | str | None = None) -> bool [q_len,past_len+q_len]",
+    "04": "causal_attention_one_head(q_new: [L,D], k_all: [S,D], v_all: [S,Dv], past_len: int, window: int | None = None) -> [L,Dv]",
+    "07a": "grouped_query_attention(q_new: [L,Hq,D], k_all: [S,Hkv,D], v_all: [S,Hkv,Dv], past_len: int, window: int | None = None) -> [L,Hq,Dv]",
+    "08": "append_contiguous_kv(k_cache: [capacity,Hkv,D], v_cache: [capacity,Hkv,Dv], used: int, k_new: [L,Hkv,D], v_new: [L,Hkv,Dv]) -> int (used+L)",
+    "14": "paged_cache_rows(page_table: [max_pages], logical_positions: [N], page_size: int) -> [N] physical rows",
 }
 HELPERS = {
     "04": ("01", "02", "03"), "04a": ("04",),
-    "05": ("03", "04"), "06": ("03", "04"), "07": ("03", "04"),
-    "07b": ("07",), "09": ("03", "07", "08"),
-    "10": ("03", "07"), "11": ("08",), "12": ("03", "07"),
-    "13": ("03", "07"), "15": ("14",), "16": ("14",),
+    "05": ("03", "04"), "06": ("03", "04"), "07a": ("03", "04"),
+    "07b": ("07a",), "09": ("03", "07a", "08"),
+    "10": ("03", "07a"), "11": ("08",), "12": ("03", "07a"),
+    "13": ("03", "07a"), "15": ("14",), "16": ("14",),
 }
 
 

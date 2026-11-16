@@ -7,13 +7,29 @@ import { oneDark } from "@codemirror/theme-one-dark";
 const GROUPS = [
   { name: "Basics", range: "01–04", ids: ["01", "02", "03", "04", "04a"] },
   { name: "Multiple heads", range: "05–06", ids: ["05", "06"] },
-  { name: "Grouped attention", range: "07", ids: ["07", "07b"] },
+  { name: "Grouped attention", range: "07", ids: ["07a", "07b"] },
   { name: "Cache & decode", range: "08–11", ids: ["08", "09", "10", "11"] },
   { name: "Serving patterns", range: "12–13", ids: ["12", "13"] },
   { name: "Paged cache", range: "14–16", ids: ["14", "15", "16"] },
   { name: "Numerics", range: "17–19", ids: ["17", "18a", "18b", "19"] },
   { name: "Measurement", range: "20", ids: ["20"] },
 ];
+const PREREQUISITES = {
+  "04": ["01", "02", "03"],
+  "04a": ["04"],
+  "05": ["04"],
+  "06": ["05"],
+  "07a": ["06"],
+  "07b": ["07a"],
+  "09": ["08"],
+  "10": ["07a"],
+  "11": ["08", "10"],
+  "12": ["07a"],
+  "13": ["07a"],
+  "15": ["14"],
+  "16": ["14"],
+  "18b": ["18a"],
+};
 const STORAGE_KEY = "inference-workbook-v1";
 const STATIC_MODE = import.meta.env.VITE_STATIC_MODE === "1";
 const $ = (id) => document.getElementById(id);
@@ -21,7 +37,13 @@ const $ = (id) => document.getElementById(id);
 function loadStore() {
   try {
     const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    return { drafts: value.drafts || {}, progress: value.progress || {}, vim: !!value.vim, theme: value.theme === "dark" ? "dark" : "light", last: value.last || null };
+    const drafts = value.drafts || {};
+    const progress = value.progress || {};
+    if (drafts["07"] && !drafts["07a"]) drafts["07a"] = drafts["07"];
+    if (progress["07"] && !progress["07a"]) progress["07a"] = progress["07"];
+    delete drafts["07"];
+    delete progress["07"];
+    return { drafts, progress, vim: !!value.vim, theme: value.theme === "dark" ? "dark" : "light", last: value.last === "07" ? "07a" : value.last || null };
   } catch {
     return { drafts: {}, progress: {}, vim: false, theme: "light", last: null };
   }
@@ -123,11 +145,25 @@ function completion(item) {
   return !draft || progress.source === draft.source ? "complete" : "stale";
 }
 
+function missingPrerequisites(item) {
+  // Keep existing work and the open exercise accessible when progress is reset.
+  if (item.id === currentId || store.drafts[item.id] || store.progress[item.id]) return [];
+  return (PREREQUISITES[item.id] || []).filter((id) => {
+    const prerequisite = exercises.find((entry) => entry.id === id);
+    return prerequisite && completion(prerequisite) !== "complete";
+  });
+}
+
+function nextAccessibleIndex(index, direction) {
+  const next = index + direction;
+  return next >= 0 && next < exercises.length && !missingPrerequisites(exercises[next]).length ? next : -1;
+}
+
 function createEditor() {
   editor = new EditorView({
     doc: "",
     extensions: [
-      vimMode.of(store.vim ? vim() : []),
+      vimMode.of(store.vim ? vim({ status: true }) : []),
       editorTheme.of(store.theme === "dark" ? oneDark : []),
       basicSetup,
       python(),
@@ -198,11 +234,14 @@ function renderNavigation() {
     const links = document.createElement("div");
     links.className = "sidebar-section-links";
     for (const item of items) {
+      const missing = missingPrerequisites(item);
       const button = document.createElement("button");
       button.type = "button";
       button.className = `exercise-link${item.id === currentId ? " active" : ""}`;
       button.setAttribute("aria-current", item.id === currentId ? "step" : "false");
-      button.title = `${item.id} · ${item.title}`;
+      button.disabled = missing.length > 0;
+      button.title = missing.length ? `Complete ${missing.join(" and ")} first` : `${item.id} · ${item.title}`;
+      if (missing.length) button.setAttribute("aria-label", `${item.id} ${item.title}; complete ${missing.join(" and ")} first`);
       const id = document.createElement("span");
       id.className = "exercise-id";
       id.textContent = item.id;
@@ -218,6 +257,11 @@ function renderNavigation() {
     }
     section.append(links);
     nav.append(section);
+  }
+  const index = exercises.findIndex((item) => item.id === currentId);
+  if (index >= 0) {
+    $("prev-button").disabled = nextAccessibleIndex(index, -1) < 0;
+    $("next-button").disabled = nextAccessibleIndex(index, 1) < 0;
   }
 }
 
@@ -239,7 +283,7 @@ function renderResult() {
 
 function selectExercise(id) {
   const item = exercises.find((entry) => entry.id === id);
-  if (!item) return;
+  if (!item || missingPrerequisites(item).length) return;
   currentId = id;
   store.last = id;
   persist();
@@ -254,8 +298,8 @@ function selectExercise(id) {
   $("solution-panel").hidden = true;
   $("solution-source").textContent = "";
   $("bottom-position").textContent = `${String(index + 1).padStart(2, "0")} / ${exercises.length}`;
-  $("prev-button").disabled = index === 0;
-  $("next-button").disabled = index === exercises.length - 1;
+  $("prev-button").disabled = nextAccessibleIndex(index, -1) < 0;
+  $("next-button").disabled = nextAccessibleIndex(index, 1) < 0;
   $("run-button").disabled = !item.checkable;
   $("run-button").textContent = "Submit";
   setEditorSource(displayedSource(item));
@@ -316,7 +360,7 @@ function installActions() {
   $("vim-toggle").addEventListener("click", () => {
     store.vim = !store.vim;
     persist();
-    editor.dispatch({ effects: vimMode.reconfigure(store.vim ? vim() : []) });
+    editor.dispatch({ effects: vimMode.reconfigure(store.vim ? vim({ status: true }) : []) });
     renderVimButton();
     editor.focus();
   });
@@ -360,15 +404,18 @@ function installActions() {
   $("run-button").addEventListener("click", runCheck);
   $("prev-button").addEventListener("click", () => {
     const index = exercises.findIndex((item) => item.id === currentId);
-    if (index > 0) selectExercise(exercises[index - 1].id);
+    const previous = nextAccessibleIndex(index, -1);
+    if (previous >= 0) selectExercise(exercises[previous].id);
   });
   $("next-button").addEventListener("click", () => {
     const index = exercises.findIndex((item) => item.id === currentId);
-    if (index < exercises.length - 1) selectExercise(exercises[index + 1].id);
+    const next = nextAccessibleIndex(index, 1);
+    if (next >= 0) selectExercise(exercises[next].id);
   });
   window.addEventListener("hashchange", () => {
-    const id = location.hash.slice(1);
+    const id = location.hash.slice(1) === "07" ? "07a" : location.hash.slice(1);
     if (id && id !== currentId) selectExercise(id);
+    if (currentId && location.hash !== `#${currentId}`) history.replaceState(null, "", `#${currentId}`);
   });
 }
 
@@ -381,8 +428,11 @@ async function main() {
     const data = await response.json();
     if (!response.ok) throw new Error(data.error || "Could not load exercises.");
     exercises = data.exercises;
-    const requested = location.hash.slice(1);
-    const id = [requested, store.last, exercises[0]?.id].find((candidate) => exercises.some((item) => item.id === candidate));
+    const requested = location.hash.slice(1) === "07" ? "07a" : location.hash.slice(1);
+    const id = [requested, store.last, exercises[0]?.id].find((candidate) => {
+      const item = exercises.find((entry) => entry.id === candidate);
+      return item && !missingPrerequisites(item).length;
+    });
     if (!id) throw new Error("No numbered exercises were found in part1_pytorch.py.");
     selectExercise(id);
   } catch (error) {

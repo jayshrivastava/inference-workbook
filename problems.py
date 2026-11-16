@@ -12,7 +12,7 @@ from collections.abc import Callable
 import torch
 
 
-# 01-07: attention math. No batch axis yet.
+# 01-07a: attention math. No batch axis yet.
 
 
 # Starter functions for the public workbook. Worked solutions stay in ignored part1_pytorch.py.
@@ -24,8 +24,6 @@ def qk_scores_one_head(q: torch.Tensor, k: torch.Tensor) -> torch.Tensor:
 
     Return: [L, S]. Each entry compares one query with one key.
     Scale each dot product by 1 / sqrt(D). No masking or softmax yet.
-
-    Try a tiny L=2, S=3, D=4 example before using larger tensors.
     """
     raise NotImplementedError("exercise 01")
 
@@ -221,7 +219,7 @@ def grouped_query_attention(
     past_len: int,
     window: int | None = None,
 ) -> torch.Tensor:
-    """07. Implement GQA without mixing heads or requests.
+    """07a. Implement GQA without mixing heads or requests.
 
     q_new: [L, Hq, D]; k_all: [S, Hkv, D]; v_all: [S, Hkv, Dv].
 
@@ -246,7 +244,7 @@ def grouped_query_attention(
   L tok3  ...
     tok4
     """
-    raise NotImplementedError("exercise 07")
+    raise NotImplementedError("exercise 07a")
 
 
 def predict_next_token_gqa(
@@ -273,7 +271,7 @@ def predict_next_token_gqa(
     a scalar torch.long tensor. This toy final layer omits FFN and final
     normalization so you can focus on the shape change and vocab softmax.
 
-    Available helper: grouped_query_attention (07).
+    Available helper: grouped_query_attention (07a).
 
     Try Hq=4, Hkv=2, D=4, Dv=1, D_model=3, V=3.
     """
@@ -329,7 +327,7 @@ def decode_one_token(
     The old cache rows must not be recomputed or overwritten.
 
     Available helpers: append_contiguous_kv (08) and
-    grouped_query_attention (07).
+    grouped_query_attention (07a).
     """
     raise NotImplementedError("exercise 09")
 
@@ -352,7 +350,7 @@ def verify_block(
     Query j sees old keys and new keys 0..j, never j+1..L-1.
     Do not mutate a cache here; acceptance is decided outside this step.
 
-    Available helper: grouped_query_attention (07).
+    Available helper: grouped_query_attention (07a).
     """
     raise NotImplementedError("exercise 10")
 
@@ -394,7 +392,7 @@ def chunked_prefill(
     inside the current chunk. The answer should equal unchunked causal
     attention, aside from normal floating-point rounding.
 
-    Available helper: grouped_query_attention (07).
+    Available helper: grouped_query_attention (07a).
     """
     raise NotImplementedError("exercise 12")
 
@@ -415,7 +413,7 @@ def batched_gqa_decode(
     Padding and other requests must not affect its softmax.
     No cache mutation is needed in this exercise.
 
-    Available helper: grouped_query_attention (07), called for each
+    Available helper: grouped_query_attention (07a), called for each
     request's valid prefix if you choose a loop.
     """
     raise NotImplementedError("exercise 13")
