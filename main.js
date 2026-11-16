@@ -344,11 +344,11 @@ function installActions() {
       return;
     }
     try {
-      const response = await fetch(`/api/solution?id=${encodeURIComponent(item.id)}`);
+      const response = await fetch(STATIC_MODE ? `${import.meta.env.BASE_URL}solutions.json` : `/api/solution?id=${encodeURIComponent(item.id)}`);
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || "Could not load the local solution.");
+      if (!response.ok) throw new Error(data.error || "Could not load the solution.");
       if (currentId !== item.id) return;
-      $("solution-source").textContent = data.source;
+      $("solution-source").textContent = STATIC_MODE ? data[item.id] : data.source;
       panel.hidden = false;
       $("solution-toggle").textContent = "Hide solution";
       $("solution-toggle").setAttribute("aria-expanded", "true");

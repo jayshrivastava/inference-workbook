@@ -39,6 +39,13 @@ def run(payload_json: str) -> str:
     capture = io.StringIO()
     try:
         base = Path("problems.py").read_text()
+        if Path("solutions.json").exists():
+            published = json.loads(Path("solutions.json").read_text())
+            solved = []
+            for solution in published.values():
+                function = ast.parse(solution).body[0]
+                solved.append({"function": function.name, "source": solution})
+            base = _merge(base, solved)
         source = _merge(base, payload["edits"])
         Path("part1_pytorch.py").write_text(source)
         sys.modules.pop("part1_pytorch", None)

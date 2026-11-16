@@ -20,7 +20,7 @@ async function initialize() {
   pyodide.FS.chdir("/home/pyodide");
   await pyodide.runPythonAsync('import micropip; await micropip.install("filelock==3.32.0")');
   await pyodide.loadPackage(`${RUNTIME_BASE}${encodeURIComponent(manifest.wheel.filename)}`);
-  for (const name of ["problems.py", "check_part1.py", "browser_runner.py"]) {
+  for (const name of ["problems.py", "check_part1.py", "browser_runner.py", "solutions.json"]) {
     const response = await fetch(`${base}${name}`);
     if (!response.ok) throw new Error(`Could not load ${name}.`);
     pyodide.FS.writeFile(`/home/pyodide/${name}`, await response.text());

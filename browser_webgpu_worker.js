@@ -18,7 +18,7 @@ async function initialize() {
   pyodide.FS.chdir("/home/pyodide");
   pyodide.globals.set("wheel_url", manifest.wheelUrl);
   await pyodide.runPythonAsync("import micropip; await micropip.install(wheel_url)");
-  for (const name of ["problems.py", "check_part1.py", "browser_runner.py", "browser_webgpu_runner.py"]) {
+  for (const name of ["problems.py", "check_part1.py", "browser_runner.py", "browser_webgpu_runner.py", "solutions.json"]) {
     const file = await fetch(`${base}${name}`);
     if (!file.ok) throw new Error(`Could not load ${name}.`);
     pyodide.FS.writeFile(`/home/pyodide/${name}`, await file.text());
