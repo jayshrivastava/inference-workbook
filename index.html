@@ -20,6 +20,7 @@
       <aside class="sidebar">
         <div class="site-title">Inference Workbook</div>
         <div class="site-author">by <a href="https://jayantshrivastava.com/" target="_blank" rel="noopener noreferrer">@jayshrivastava</a></div>
+        <a class="site-source" href="https://github.com/jayshrivastava/inference-workbook" target="_blank" rel="noopener noreferrer" aria-label="View source on GitHub">source ↗</a>
         <div class="progress">
           <div class="progress-label"><span>Progress</span><span id="progress-caption">0 / 0</span></div>
           <div class="progress-track"><div id="progress-fill"></div></div>
@@ -36,7 +37,6 @@
             <button id="theme-toggle" class="utility-button" type="button" aria-label="Switch to dark mode" title="Switch to dark mode" aria-pressed="false">☾</button>
             <span class="action-divider" aria-hidden="true">|</span>
             <button id="reset-button" type="button" title="Discard this browser attempt; keep the local Python file" disabled>Reset attempt</button>
-            <button id="solution-toggle" type="button" aria-expanded="false" hidden>View solution</button>
             <button id="run-button" type="button" class="run-button">Submit</button>
           </div>
         </header>
@@ -44,11 +44,11 @@
           <summary>Problem description</summary>
           <pre id="problem-text"></pre>
         </details>
-        <div id="editor" aria-label="Python editor"></div>
-        <section class="solution-panel" id="solution-panel" hidden>
-          <div class="solution-heading">Solution · read only</div>
+        <details class="problem-details solution-details" id="solution-details" hidden>
+          <summary id="solution-summary" aria-disabled="true">Solution <span id="solution-lock-note">(unlocks after 1 attempt)</span></summary>
           <pre id="solution-source"></pre>
-        </section>
+        </details>
+        <div id="editor" aria-label="Python editor"></div>
         <section class="output" id="result-panel" aria-live="polite">
           <div class="output-heading"><span>Output</span><span id="result-state">Ready</span></div>
           <pre id="result-output">Submit your code when you're ready.</pre>

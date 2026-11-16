@@ -39,13 +39,19 @@ function loadStore() {
     const value = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
     const drafts = value.drafts || {};
     const progress = value.progress || {};
+    const attempts = value.attempts || {};
     if (drafts["07"] && !drafts["07a"]) drafts["07a"] = drafts["07"];
     if (progress["07"] && !progress["07a"]) progress["07a"] = progress["07"];
+    if (attempts["07"] && !attempts["07a"]) attempts["07a"] = attempts["07"];
     delete drafts["07"];
     delete progress["07"];
-    return { drafts, progress, vim: !!value.vim, theme: value.theme === "dark" ? "dark" : "light", last: value.last === "07" ? "07a" : value.last || null };
+    delete attempts["07"];
+    for (const [id, state] of Object.entries(progress)) {
+      if (state?.kind === "verified") attempts[id] = true;
+    }
+    return { drafts, progress, attempts, vim: !!value.vim, theme: value.theme === "dark" ? "dark" : "light", last: value.last === "07" ? "07a" : value.last || null };
   } catch {
-    return { drafts: {}, progress: {}, vim: false, theme: "light", last: null };
+    return { drafts: {}, progress: {}, attempts: {}, vim: false, theme: "light", last: null };
   }
 }
 
@@ -221,6 +227,7 @@ function renderProgress() {
 
 function renderNavigation() {
   const nav = $("exercise-nav");
+  const { scrollTop, scrollLeft } = nav;
   nav.replaceChildren();
   for (const group of GROUPS) {
     const items = group.ids.map((id) => exercises.find((item) => item.id === id)).filter(Boolean);
@@ -258,6 +265,8 @@ function renderNavigation() {
     section.append(links);
     nav.append(section);
   }
+  nav.scrollTop = scrollTop;
+  nav.scrollLeft = scrollLeft;
   const index = exercises.findIndex((item) => item.id === currentId);
   if (index >= 0) {
     $("prev-button").disabled = nextAccessibleIndex(index, -1) < 0;
@@ -270,6 +279,21 @@ function renderDraftState() {
   if (!item) return;
   const draft = store.drafts[item.id];
   $("reset-button").disabled = !draft;
+}
+
+function solutionUnlocked(item) {
+  return !!store.attempts[item.id];
+}
+
+function renderSolutionState() {
+  const item = currentExercise();
+  const details = $("solution-details");
+  details.hidden = !item?.has_solution;
+  const locked = !item || !solutionUnlocked(item);
+  details.dataset.locked = String(locked);
+  $("solution-lock-note").hidden = !locked;
+  $("solution-summary").setAttribute("aria-disabled", String(locked));
+  if (locked) details.open = false;
 }
 
 function renderResult() {
@@ -292,10 +316,7 @@ function selectExercise(id) {
   $("exercise-number").textContent = id.toUpperCase();
   $("exercise-title").textContent = item.title;
   $("problem-text").textContent = item.prompt;
-  $("solution-toggle").hidden = !item.has_solution;
-  $("solution-toggle").textContent = "View solution";
-  $("solution-toggle").setAttribute("aria-expanded", "false");
-  $("solution-panel").hidden = true;
+  $("solution-details").open = false;
   $("solution-source").textContent = "";
   $("bottom-position").textContent = `${String(index + 1).padStart(2, "0")} / ${exercises.length}`;
   $("prev-button").disabled = nextAccessibleIndex(index, -1) < 0;
@@ -303,6 +324,7 @@ function selectExercise(id) {
   $("run-button").disabled = !item.checkable;
   $("run-button").textContent = "Submit";
   setEditorSource(displayedSource(item));
+  renderSolutionState();
   renderDraftState();
   renderProgress();
   renderNavigation();
@@ -313,6 +335,9 @@ async function runCheck() {
   const item = currentExercise();
   if (!item?.checkable || $("run-button").disabled) return;
   const source = editor.state.doc.toString();
+  store.attempts[item.id] = true;
+  persist();
+  renderSolutionState();
   $("run-button").disabled = true;
   results.set(item.id, { kind: "running", output: STATIC_MODE ? "Trying WebGPU first… First load may take a while." : "Running your code with the local PyTorch checker…" });
   renderResult();
@@ -355,6 +380,7 @@ function installActions() {
     renderProgress();
     renderNavigation();
     renderDraftState();
+    renderSolutionState();
     renderResult();
   });
   $("vim-toggle").addEventListener("click", () => {
@@ -378,27 +404,27 @@ function installActions() {
     persist();
     selectExercise(item.id);
   });
-  $("solution-toggle").addEventListener("click", async () => {
+  $("solution-summary").addEventListener("click", (event) => {
+    if ($("solution-details").dataset.locked === "true") event.preventDefault();
+  });
+  $("solution-details").addEventListener("toggle", async () => {
     const item = currentExercise();
-    const panel = $("solution-panel");
-    if (!panel.hidden) {
-      panel.hidden = true;
-      $("solution-toggle").textContent = "View solution";
-      $("solution-toggle").setAttribute("aria-expanded", "false");
-      return;
-    }
+    const details = $("solution-details");
+    if (!details.open || !item?.has_solution || !solutionUnlocked(item)) return;
+    $("solution-source").textContent = "Loading…";
     try {
       const response = await fetch(STATIC_MODE ? `${import.meta.env.BASE_URL}solutions.json` : `/api/solution?id=${encodeURIComponent(item.id)}`);
       const data = await response.json();
       if (!response.ok) throw new Error(data.error || "Could not load the solution.");
-      if (currentId !== item.id) return;
-      $("solution-source").textContent = STATIC_MODE ? data[item.id] : data.source;
-      panel.hidden = false;
-      $("solution-toggle").textContent = "Hide solution";
-      $("solution-toggle").setAttribute("aria-expanded", "true");
+      if (currentId !== item.id || !details.open) return;
+      const source = STATIC_MODE ? data[item.id] : data.source;
+      if (typeof source !== "string") throw new Error("Could not load the solution.");
+      $("solution-source").textContent = source;
     } catch (error) {
+      if (currentId !== item.id) return;
+      details.open = false;
       results.set(item.id, { kind: "fail", output: String(error.message || error) });
-      if (currentId === item.id) renderResult();
+      renderResult();
     }
   });
   $("run-button").addEventListener("click", runCheck);
