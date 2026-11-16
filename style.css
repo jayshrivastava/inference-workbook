@@ -76,3 +76,4 @@ h1{font-size:20px;font-weight:600;letter-spacing:-.035em;line-height:1.2;margin:
 [data-theme=dark] .output{background:#202020}[data-theme=dark] .output-heading{color:#aaa}[data-theme=dark] .output.pass .output-heading{color:#83ca95}[data-theme=dark] .output.fail .output-heading{color:#ef9187}[data-theme=dark] .output.running .output-heading{color:#e3ce78}
 [data-theme=dark] .page-nav button{color:#ddd}[data-theme=dark] .page-nav button:disabled{color:#666}
 @media(max-width:620px){[data-theme=dark] .sidebar{border-color:#353535}[data-theme=dark] .exercise-link{border-color:#444}}
+.cm-editor:has(.cm-selectionBackground) .cm-activeLine{background:transparent!important}
